@@ -434,6 +434,57 @@ if (!window.twttr) {
     return allSplits;
   };
 
+  twttr.txt.autoLinkWithEntities =  function(text, entities) {
+    var result = [];
+    var allEntities = [];
+
+    var addEntities = function (key, array) {
+      if (entities[key]) {
+        array.push.apply(array, entities[key].map(function (ea) { return {type: key, value: ea}}));
+      };
+    };
+
+    addEntities('urls', allEntities);
+    addEntities('places', allEntities);
+    addEntities('hashtags', allEntities);
+    addEntities('user_mentions', allEntities);
+    allEntities.sort(function (a,b) { return a.value.indices[0] - b.value.indices[0];});
+
+    var linkersFor = {
+      urls: function (text, url) {
+        var displayUrl = twttr.txt.htmlEscape(url.display_url || url.url);
+        var expandedUrl = twttr.txt.htmlEscape(url.expanded_url || url.url);
+        var srcUrl = twttr.txt.htmlEscape(url.url);
+        return '<a href="' + srcUrl + '" target="_blank" rel="nofollow" data-expanded-url="' + expandedUrl + '" class="twitter-timeline-link">' + displayUrl + '</a>';
+      },
+      places: function (text, place) {
+        return text;
+      },
+      hashtags: function (text, hashtag) {
+        var escaped = twttr.txt.htmlEscape(hashtag.text);
+        return '<a href="#!/search?q=%23' + escaped + '" title = "#' + escaped + '" class="twitter-hashtag" rel="nofollow">#' + escaped + "</a>";
+      },
+      user_mentions: function (text, user_mention) {
+        var screenName = twttr.txt.htmlEscape(user_mention.screen_name);
+        return '<a class="twitter-atreply" data-screen-name="' + screenName + '" href="http://twitter.com/' + screenName + '" rel="nofollow">' + screenName + "</a>";
+      }
+    };
+
+    var index = 0;
+    allEntities.forEach(function (object) {
+        var type = object.type;
+        var entity = object.value;
+        var start = entity.indices[0];
+        var end = entity.indices[1];
+        result.push(text.slice(index, start));
+        var linker = linkersFor[type] || function (text) { return text;};
+        result.push(linker(text.slice(start, end), entity));
+        index = end;
+    });
+    result.push(text.slice(index, text.length + 1));
+    return result.join("");
+  };
+
   twttr.txt.hitHighlight = function(text, hits, options) {
     var defaultHighlightTag = "em";
 

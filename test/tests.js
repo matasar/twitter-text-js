@@ -32,3 +32,19 @@ test("twttr.txt.splitTags", function() {
     same(twttr.txt.splitTags(tests[i][0]), tests[i][1], tests[i][2] || tests[i][0]);
   }
 });
+
+test("twttr.txt.autoLinkWithEntities", function() {
+  var tweet = "Hello @jack I am http://t.co/capital #jack";
+  var entities = {"places":[],"urls":[{"expanded_url":"http://t.co/capital","url":"http://t.co/capital","indices":[17,36],"display_url":"t.co/capital"}],"hashtags":[{"text":"jack","indices":[37,42]}],"user_mentions":[{"name":"Jack","id_str":"3","id":3,"indices":[6,11],"screen_name":"jack"}]};
+  var result = 'Hello <a class="twitter-atreply" data-screen-name="jack" href="http://twitter.com/jack" rel="nofollow">jack</a> I am <a href="http://t.co/capital" target="_blank" rel="nofollow" data-expanded-url="http://t.co/capital" class="twitter-timeline-link">t.co/capital</a> <a href="#!/search?q=%23jack" title = "#jack" class="twitter-hashtag" rel="nofollow">#jack</a>';
+
+  equal(result, twttr.txt.autoLinkWithEntities(tweet, entities), "linkifies");
+});
+
+test("twttr.txt.autoLinkWithEntities", function() {
+  var tweet = "Hello @jack I am http://t.co/capital #jack";
+  var entities = {fake_entity: [{garbage: 12}], "places":[],"urls":[{"expanded_url":"http://t.co/capital","url":"http://t.co/capital","indices":[17,36],"display_url":"t.co/capital"}],"hashtags":[{"text":"jack","indices":[37,42]}],"user_mentions":[{"name":"Jack","id_str":"3","id":3,"indices":[6,11],"screen_name":"jack"}]};
+  var result = 'Hello <a class="twitter-atreply" data-screen-name="jack" href="http://twitter.com/jack" rel="nofollow">jack</a> I am <a href="http://t.co/capital" target="_blank" rel="nofollow" data-expanded-url="http://t.co/capital" class="twitter-timeline-link">t.co/capital</a> <a href="#!/search?q=%23jack" title = "#jack" class="twitter-hashtag" rel="nofollow">#jack</a>';
+
+  equal(result, twttr.txt.autoLinkWithEntities(tweet, entities), "Matches");
+});
