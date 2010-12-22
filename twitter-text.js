@@ -157,7 +157,7 @@ if (!window.twttr) {
   }
 
   twttr.txt.autoLink = function(text, options) {
-    options = applyDefaultOptions(options);
+    options = clone(options || {});
     return twttr.txt.autoLinkUsernamesOrLists(
       twttr.txt.autoLinkUrlsCustom(
         twttr.txt.autoLinkHashtags(text, options),
@@ -178,7 +178,13 @@ if (!window.twttr) {
   }
 
   twttr.txt.autoLinkUsernamesOrLists = function(text, options) {
-    options = applyDefaultOptions(options);
+     options = clone(options || {});
+
+     options.urlClass = options.urlClass || DEFAULT_URL_CLASS;
+     options.listClass = options.listClass || DEFAULT_LIST_CLASS;
+     options.usernameClass = options.usernameClass || DEFAULT_USERNAME_CLASS;
+     options.usernameUrlBase = options.usernameUrlBase || "http://twitter.com/";
+     options.listUrlBase = options.listUrlBase || "http://twitter.com/";
 
     if (!options.suppressNoFollow) {
       var extraHtml = HTML_ATTR_NO_FOLLOW;
@@ -238,7 +244,11 @@ if (!window.twttr) {
   };
 
   twttr.txt.autoLinkHashtags = function(text, options) {
-    options = applyDefaultOptions(options);
+    options = clone(options || {});
+    options.urlClass = options.urlClass || DEFAULT_URL_CLASS;
+    options.hashtagClass = options.hashtagClass || DEFAULT_HASHTAG_CLASS;
+    options.hashtagUrlBase = options.hashtagUrlBase || "http://twitter.com/search?q=%23";
+
     if (!options.suppressNoFollow) {
       var extraHtml = HTML_ATTR_NO_FOLLOW;
     }
@@ -263,7 +273,7 @@ if (!window.twttr) {
 
 
   twttr.txt.autoLinkUrlsCustom = function(text, options) {
-    options = applyDefaultOptions(options);
+    options = clone(options || {});
     if (!options.suppressNoFollow) {
       options.rel = "nofollow";
     }
