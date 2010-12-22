@@ -39,7 +39,6 @@ test("twttr.txt.autoLinkWithEntities", function() {
   var entities = {"places":[],"urls":[{"expanded_url":"http://t.co/capital","url":"http://t.co/capital","indices":[17,36],"display_url":"t.co/capital"}],"hashtags":[{"text":"jack","indices":[37,42]}],"user_mentions":[{"name":"Jack","id_str":"3","id":3,"indices":[6,11],"screen_name":"jack"}]};
   var result = 'Hello <a class="twitter-atreply" data-screen-name="jack" href="http://twitter.com/jack" rel="nofollow">jack</a> I am <a href="http://t.co/capital" target="_blank" rel="nofollow" data-expanded-url="http://t.co/capital" class="twitter-timeline-link">t.co/capital</a> <a href="#!/search?q=%23jack" title = "#jack" class="twitter-hashtag" rel="nofollow">#jack</a>';
   var answer = twttr.txt.autoLinkWithEntities(tweet, entities, options);
-  console.log(answer);
   equal(answer, result, "autolinks correctly");
 });
 
