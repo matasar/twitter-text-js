@@ -444,10 +444,10 @@ if (!window.twttr) {
       };
     };
 
-    addEntities('urls', allEntities);
-    addEntities('places', allEntities);
-    addEntities('hashtags', allEntities);
-    addEntities('user_mentions', allEntities);
+    for (var key in entities) {
+      addEntities(key, allEntities);
+    }
+
     allEntities.sort(function (a,b) { return a.value.indices[0] - b.value.indices[0];});
 
     var linkersFor = {
