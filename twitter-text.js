@@ -457,9 +457,6 @@ if (!window.twttr) {
         var srcUrl = twttr.txt.htmlEscape(url.url);
         return '<a href="' + srcUrl + '" target="_blank" rel="nofollow" data-expanded-url="' + expandedUrl + '" class="twitter-timeline-link">' + displayUrl + '</a>';
       },
-      places: function (text, place) {
-        return text;
-      },
       hashtags: function (text, hashtag) {
         var escaped = twttr.txt.htmlEscape(hashtag.text);
         return '<a href="#!/search?q=%23' + escaped + '" title = "#' + escaped + '" class="twitter-hashtag" rel="nofollow">#' + escaped + "</a>";
