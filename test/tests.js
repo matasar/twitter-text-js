@@ -34,17 +34,20 @@ test("twttr.txt.splitTags", function() {
 });
 
 test("twttr.txt.autoLinkWithEntities", function() {
+  var options = {urlClass: 'twitter-timeline-link', hashtagClass: 'twitter-hashtag', usernameClass: 'twitter-atreply', hashtagUrlBase: '#!/search?q=%23'};
   var tweet = "Hello @jack I am http://t.co/capital #jack";
   var entities = {"places":[],"urls":[{"expanded_url":"http://t.co/capital","url":"http://t.co/capital","indices":[17,36],"display_url":"t.co/capital"}],"hashtags":[{"text":"jack","indices":[37,42]}],"user_mentions":[{"name":"Jack","id_str":"3","id":3,"indices":[6,11],"screen_name":"jack"}]};
   var result = 'Hello <a class="twitter-atreply" data-screen-name="jack" href="http://twitter.com/jack" rel="nofollow">jack</a> I am <a href="http://t.co/capital" target="_blank" rel="nofollow" data-expanded-url="http://t.co/capital" class="twitter-timeline-link">t.co/capital</a> <a href="#!/search?q=%23jack" title = "#jack" class="twitter-hashtag" rel="nofollow">#jack</a>';
-
-  equal(twttr.txt.autoLinkWithEntities(tweet, entities), result, "autolinks correctly");
+  var answer = twttr.txt.autoLinkWithEntities(tweet, entities, options);
+  console.log(answer);
+  equal(answer, result, "autolinks correctly");
 });
 
 test("twttr.txt.autoLinkWithEntities", function() {
+  var options = {urlClass: 'twitter-timeline-link', hashtagClass: 'twitter-hashtag', usernameClass: 'twitter-atreply', hashtagUrlBase: '#!/search?q=%23'};
   var tweet = "Hello @jack I am http://t.co/capital #jack";
   var entities = {fake_entity: [{garbage: 12, "indices":[0,3]}], "places":[],"urls":[{"expanded_url":"http://t.co/capital","url":"http://t.co/capital","indices":[17,36],"display_url":"t.co/capital"}],"hashtags":[{"text":"jack","indices":[37,42]}],"user_mentions":[{"name":"Jack","id_str":"3","id":3,"indices":[6,11],"screen_name":"jack"}]};
   var result = 'Hello <a class="twitter-atreply" data-screen-name="jack" href="http://twitter.com/jack" rel="nofollow">jack</a> I am <a href="http://t.co/capital" target="_blank" rel="nofollow" data-expanded-url="http://t.co/capital" class="twitter-timeline-link">t.co/capital</a> <a href="#!/search?q=%23jack" title = "#jack" class="twitter-hashtag" rel="nofollow">#jack</a>';
 
-  equal(twttr.txt.autoLinkWithEntities(tweet, entities), result, "autolinks correctly even with unknown entities");
+  equal(twttr.txt.autoLinkWithEntities(tweet, entities, options), result, "autolinks correctly even with unknown entities");
 });

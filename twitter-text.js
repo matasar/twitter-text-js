@@ -157,7 +157,7 @@ if (!window.twttr) {
   }
 
   twttr.txt.autoLink = function(text, options) {
-    options = clone(options || {});
+    options = twttr.txt._applyDefaultOptions(options);
     return twttr.txt.autoLinkUsernamesOrLists(
       twttr.txt.autoLinkUrlsCustom(
         twttr.txt.autoLinkHashtags(text, options),
@@ -165,15 +165,22 @@ if (!window.twttr) {
     options);
   };
 
-
-  twttr.txt.autoLinkUsernamesOrLists = function(text, options) {
+  twttr.txt._applyDefaultOptions = function (options) {
     options = clone(options || {});
-
     options.urlClass = options.urlClass || DEFAULT_URL_CLASS;
     options.listClass = options.listClass || DEFAULT_LIST_CLASS;
     options.usernameClass = options.usernameClass || DEFAULT_USERNAME_CLASS;
     options.usernameUrlBase = options.usernameUrlBase || "http://twitter.com/";
     options.listUrlBase = options.listUrlBase || "http://twitter.com/";
+    options.hashtagClass = options.hashtagClass || DEFAULT_HASHTAG_CLASS;
+    options.hashtagUrlBase = options.hashtagUrlBase || "http://twitter.com/search?q=%23";
+    return options;
+  }
+
+
+  twttr.txt.autoLinkUsernamesOrLists = function(text, options) {
+    options = twttr.txt._applyDefaultOptions(options);
+
     if (!options.suppressNoFollow) {
       var extraHtml = HTML_ATTR_NO_FOLLOW;
     }
@@ -232,10 +239,7 @@ if (!window.twttr) {
   };
 
   twttr.txt.autoLinkHashtags = function(text, options) {
-    options = clone(options || {});
-    options.urlClass = options.urlClass || DEFAULT_URL_CLASS;
-    options.hashtagClass = options.hashtagClass || DEFAULT_HASHTAG_CLASS;
-    options.hashtagUrlBase = options.hashtagUrlBase || "http://twitter.com/search?q=%23";
+    options = twttr.txt._applyDefaultOptions(options);
     if (!options.suppressNoFollow) {
       var extraHtml = HTML_ATTR_NO_FOLLOW;
     }
@@ -260,7 +264,7 @@ if (!window.twttr) {
 
 
   twttr.txt.autoLinkUrlsCustom = function(text, options) {
-    options = clone(options || {});
+    options = twttr.txt._applyDefaultOptions(options);
     if (!options.suppressNoFollow) {
       options.rel = "nofollow";
     }
@@ -434,52 +438,58 @@ if (!window.twttr) {
     return allSplits;
   };
 
-  twttr.txt.autoLinkWithEntities =  function(text, entities) {
-    var result = [];
+  twttr.txt.autoLinkWithEntities =  function(text, entities, options) {
+    options = twttr.txt._applyDefaultOptions(options);
+    if (!options.suppressNoFollow) {
+      var extraHtml = HTML_ATTR_NO_FOLLOW;
+    }
+    var result = "";
     var allEntities = [];
 
     var addEntities = function (key, array) {
       if (entities[key]) {
-        array.push.apply(array, entities[key].map(function (ea) { return {type: key, value: ea}}));
+        array.push.apply(array, entities[key].map(function (ea) { return {key: key, entity: ea}}));
       };
     };
 
     for (var key in entities) {
-      addEntities(key, allEntities);
+      if (entities.hasOwnProperty(key)) {
+        addEntities(key, allEntities);
+      }
     }
 
-    allEntities.sort(function (a,b) { return a.value.indices[0] - b.value.indices[0];});
+    allEntities.sort(function (a,b) { return a.entity.indices[0] - b.entity.indices[0];});
 
     var linkersFor = {
       urls: function (text, url) {
         var displayUrl = twttr.txt.htmlEscape(url.display_url || url.url);
         var expandedUrl = twttr.txt.htmlEscape(url.expanded_url || url.url);
         var srcUrl = twttr.txt.htmlEscape(url.url);
-        return '<a href="' + srcUrl + '" target="_blank" rel="nofollow" data-expanded-url="' + expandedUrl + '" class="twitter-timeline-link">' + displayUrl + '</a>';
+        return '<a href="' + srcUrl + '" target="_blank"' + extraHtml + ' data-expanded-url="' + expandedUrl + '" class="' + options.urlClass + '">' + displayUrl + '</a>';
       },
       hashtags: function (text, hashtag) {
         var escaped = twttr.txt.htmlEscape(hashtag.text);
-        return '<a href="#!/search?q=%23' + escaped + '" title = "#' + escaped + '" class="twitter-hashtag" rel="nofollow">#' + escaped + "</a>";
+        return '<a href="' + options.hashtagUrlBase + escaped + '" title = "#' + escaped + '" class="' + options.hashtagClass +  '"' + extraHtml + '>#' + escaped + "</a>";
       },
       user_mentions: function (text, user_mention) {
         var screenName = twttr.txt.htmlEscape(user_mention.screen_name);
-        return '<a class="twitter-atreply" data-screen-name="' + screenName + '" href="http://twitter.com/' + screenName + '" rel="nofollow">' + screenName + "</a>";
+        return '<a class="' + options.usernameClass + '" data-screen-name="' + screenName + '" href="http://twitter.com/' + screenName + '"' + extraHtml + '>' + screenName + "</a>";
       }
     };
 
     var index = 0;
     allEntities.forEach(function (object) {
-        var type = object.type;
-        var entity = object.value;
+        var type = object.key;
+        var entity = object.entity;
         var start = entity.indices[0];
         var end = entity.indices[1];
-        result.push(text.slice(index, start));
+        result += text.slice(index, start);
         var linker = linkersFor[type] || function (text) { return text;};
-        result.push(linker(text.slice(start, end), entity));
+        result += linker(text.slice(start, end), entity);
         index = end;
     });
-    result.push(text.slice(index, text.length + 1));
-    return result.join("");
+    result += text.slice(index, text.length + 1);
+    return result;
   };
 
   twttr.txt.hitHighlight = function(text, hits, options) {
