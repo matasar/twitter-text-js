@@ -51,3 +51,29 @@ test("twttr.txt.autoLinkWithEntities", function() {
 
   equal(twttr.txt.autoLinkWithEntities(tweet, entities, options), result, "autolinks correctly even with unknown entities");
 });
+
+test("twttr.txt.autoLinkWithEntities custom linker", function() {
+  var tweet = "hello";
+  var entities = {bold: [{indices: [0,5]}]};
+  var expected = "<b>hello</b>";
+  var options = {linkers:
+    {bold:
+      function (text, entity) { return "<b>" + text + "</b>";}
+    }
+  };
+  var result = twttr.txt.autoLinkWithEntities(tweet, entities, options);
+  equal(result, expected, "Supports custom linkers");
+});
+
+test("twttr.txt.autoLinkWithEntities override linker", function() {
+  var tweet = "#jack";
+  var entities = {hashtags: [{"indices":[0,5],"text":"jack"}]};
+  var expected = "<b>#jack</b>";
+  var options = {linkers:
+    {hashtags:
+      function (text, entity) { return "<b>" + text + "</b>";}
+    }
+  };
+  var result = twttr.txt.autoLinkWithEntities(tweet, entities, options);
+  equal(result, expected, "Supports custom linkers");
+});

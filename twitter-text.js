@@ -157,7 +157,7 @@ if (!window.twttr) {
   }
 
   twttr.txt.autoLink = function(text, options) {
-    options = twttr.txt._applyDefaultOptions(options);
+    options = applyDefaultOptions(options);
     return twttr.txt.autoLinkUsernamesOrLists(
       twttr.txt.autoLinkUrlsCustom(
         twttr.txt.autoLinkHashtags(text, options),
@@ -165,7 +165,7 @@ if (!window.twttr) {
     options);
   };
 
-  twttr.txt._applyDefaultOptions = function (options) {
+  var applyDefaultOptions = function (options) {
     options = clone(options || {});
     options.urlClass = options.urlClass || DEFAULT_URL_CLASS;
     options.listClass = options.listClass || DEFAULT_LIST_CLASS;
@@ -177,9 +177,8 @@ if (!window.twttr) {
     return options;
   }
 
-
   twttr.txt.autoLinkUsernamesOrLists = function(text, options) {
-    options = twttr.txt._applyDefaultOptions(options);
+    options = applyDefaultOptions(options);
 
     if (!options.suppressNoFollow) {
       var extraHtml = HTML_ATTR_NO_FOLLOW;
@@ -239,7 +238,7 @@ if (!window.twttr) {
   };
 
   twttr.txt.autoLinkHashtags = function(text, options) {
-    options = twttr.txt._applyDefaultOptions(options);
+    options = applyDefaultOptions(options);
     if (!options.suppressNoFollow) {
       var extraHtml = HTML_ATTR_NO_FOLLOW;
     }
@@ -264,7 +263,7 @@ if (!window.twttr) {
 
 
   twttr.txt.autoLinkUrlsCustom = function(text, options) {
-    options = twttr.txt._applyDefaultOptions(options);
+    options = applyDefaultOptions(options);
     if (!options.suppressNoFollow) {
       options.rel = "nofollow";
     }
@@ -439,7 +438,8 @@ if (!window.twttr) {
   };
 
   twttr.txt.autoLinkWithEntities =  function(text, entities, options) {
-    options = twttr.txt._applyDefaultOptions(options);
+    options = applyDefaultOptions(options);
+
     if (!options.suppressNoFollow) {
       var extraHtml = HTML_ATTR_NO_FOLLOW;
     }
@@ -477,14 +477,21 @@ if (!window.twttr) {
       }
     };
 
+    var customLinkers = options.linkers || {};
+
+    for (var key in customLinkers) {
+      if (customLinkers.hasOwnProperty(key)) {
+        linkersFor[key] = customLinkers[key];
+      };
+    }
+
     var index = 0;
     allEntities.forEach(function (object) {
-        var type = object.key;
         var entity = object.entity;
         var start = entity.indices[0];
         var end = entity.indices[1];
         result += text.slice(index, start);
-        var linker = linkersFor[type] || function (text) { return text;};
+        var linker = linkersFor[object.key] || function (text) { return text;};
         result += linker(text.slice(start, end), entity);
         index = end;
     });
